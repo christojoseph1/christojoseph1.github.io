@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>christojoseph</title>
+    <style type="text/css" media="all">
+      * {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        margin: 0px;
+        padding: 0px;
+        user-select: none;
+        color: white;
+        transition: all 0.1s ease-in-out;
+      }
+      *::-webkit-scrollbar,
+      *::-webkit-scrollbar-track {
+        width: 0px;
+        background-color: transparent;
+      }
+      body {
+        height: 100vh;
+        width: 100%;
+        display: flex;
+        background-color: #002c3f;
+      }
+      #cont {
+        box-sizing: border-box;
+        height: 100vh;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+      }
+      .grid {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      a:hover {
+        background-color: #d1c5c580;
+      }
+      a,
+      p {
+        -webkit-user-drag: none;
+        box-sizing: border-box;
+        display: block;
+        text-decoration: none;
+        text-align: center;
+        width: 40%;
+        min-width: 300px;
+        font-size: 18px;
+        background-color: #97979780;
+        border-radius: 10px;
+        margin: 20px;
+        padding: 20px;
+      }
+
+      p {
+        background-color: #97979780;
+        padding: 30px;
+        margin: 30px auto;
+        font-weight: bolder;
+        font-size: 20px;
+        border-bottom: 5px solid #b2b2b2;
+      }
+      .rect {
+        background-color: rgba(125, 160, 255, 0.623);
+        position: fixed;
+        height: 0px;
+        width: 0px;
+        padding: 0px;
+        border: 1px solid rgba(107, 250, 255, 0.5);
+        pointer-events: none;
+        transition: none !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="cont"></div>
+    <script type="text/javascript" charset="utf-8">
+      let folders = [
+        "Birthday",
+        "Link-Previewer",
+        "Notes",
+        "React",
+        "Text-Editer",
+        "Whatsapp",
+      ];
+      let edited = folders.sort();
+      const container = document.querySelector("#cont");
+      let text = "";
+      text +=
+        `<p>` + edited.length + " " + " PROJECTS" + `</p><div class="grid">`;
+      edited.forEach((folder) => {
+        text += `<a target="_blank" href="./` + folder + `">` + folder + `</a>`;
+      });
+      text += "</div>";
+      container.innerHTML = text;
+      // rect code
+
+      let rect;
+      let rectXY = {
+        x: 0,
+        y: 0,
+      };
+      let quarter = null;
+      let screen;
+
+      function setPos(top, left, bottom, right) {
+        rect.style.top = top ? top + "px" : "unset";
+        rect.style.left = left ? left + "px" : "unset";
+        rect.style.bottom = bottom ? bottom + "px" : "unset";
+        rect.style.right = right ? right + "px" : "unset";
+      }
+
+      function setSize(width, height) {
+        rect.style.width = width + "px";
+        rect.style.height = height + "px";
+      }
+
+      function updateSize({ clientX, clientY }) {
+        switch (quarter) {
+          case 1:
+            setSize(rectXY.x - clientX, rectXY.y - clientY);
+            break;
+          case 2:
+            setSize(clientX - rectXY.x, rectXY.y - clientY);
+            break;
+          case 3:
+            setSize(clientX - rectXY.x, clientY - rectXY.y);
+            break;
+          case 4:
+            setSize(rectXY.x - clientX, clientY - rectXY.y);
+        }
+      }
+
+      function handleMove(e) {
+        if (e.clientX < rectXY.x && e.clientY < rectXY.y) {
+          if (quarter !== 1) {
+            quarter = 1;
+            setPos(
+              undefined,
+              undefined,
+              screen.height - rectXY.y,
+              screen.width - rectXY.x
+            );
+          }
+          return updateSize(e);
+        } else if (e.clientY < rectXY.y && e.clientX > rectXY.x) {
+          if (quarter !== 2) {
+            quarter = 2;
+            setPos(undefined, rectXY.x, screen.height - rectXY.y, undefined);
+          }
+          return updateSize(e);
+        } else if (e.clientY > rectXY.y && e.clientX > rectXY.x) {
+          if (quarter !== 3) {
+            quarter = 3;
+            setPos(rectXY.y, rectXY.x, undefined, undefined);
+          }
+          return updateSize(e);
+        } else if (e.clientY > rectXY.y && e.clientX < rectXY.x) {
+          if (quarter !== 4) {
+            quarter = 4;
+            setPos(rectXY.y, undefined, undefined, screen.width - rectXY.x);
+          }
+          return updateSize(e);
+        }
+      }
+
+      function createRect(e) {
+        rectXY = {
+          x: e.clientX,
+          y: e.clientY,
+        };
+        quarter = null;
+        if (rect) rect.remove();
+        screen = {
+          width: window.innerWidth,
+          height: window.innerHeight,
+        };
+        rect = document.createElement("div");
+        rect.classList.add("rect");
+        setPos(rectXY.y, rectXY.x);
+        container.appendChild(rect);
+        document.addEventListener("mousemove", handleMove);
+      }
+
+      function removeRect() {
+        rect.remove();
+        document.removeEventListener("mousemove", handleMove);
+      }
+      window.addEventListener("resize", removeRect);
+      document.addEventListener("mousedown", createRect);
+      document.addEventListener("mouseup", removeRect);
+    </script>
+  </body>
+</html>
